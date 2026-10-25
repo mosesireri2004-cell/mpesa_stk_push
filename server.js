@@ -1,10 +1,10 @@
 const express = require("express");
-//const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const axios = require("axios");
-//const Payment = require("./models/payment");
-//const path = require("path");
+const Payment = require("./models/payment");
+const path = require("path");
 
 const app = express();
 
@@ -23,18 +23,15 @@ app.listen(port, () => {
 });
 
 //connection to the db
-// const db_url = process.env.MONGO_URL;
-// mongoose
-//   .connect(db_url)
-//   .then(() => {
-//     console.log("Database connection successful");
-//   })
-//   .catch((err) => {
-//     console.log(err.message);
-//   });
+ const db_url = process.env.MONGO_URL;
+ mongoose.connect(db_url).then(() => {
+    console.log("Database connection successful");
+   }).catch((err) => {
+ console.log(err.message);
+  });
 
 // app.get("/", (req, res) => {
-//   res.send("<h1>Hello from mozz</h1>");
+//   res.send("<h1>Hello from backend</h1>");
 // });
 
 //app.get("/token", (req,res)=>{
@@ -88,14 +85,9 @@ async function generateToken(req, res, next) {
 
 app.post("/stk", generateToken, async (req, res) => {
   try {
-    //const { phone, amount, reference } = req.body;
+    
     const phone = req.body.phone.substring(1);
     const amount = req.body.amount;
-    // const reference = req.body.reference;
-
-    // console.log(phone);
-    // console.log(amount);
-    // console.log(reference);
 
     if (!phone || amount === undefined) {
       return res.status(400).json({
@@ -197,26 +189,22 @@ app.post("/callback", (req, res) => {
 
   console.log(callbackData.Body.stkCallback.CallbackMetadata);
 
-  // const phone = callbackData.Body.stkCallback.CallbackMetadata.Item[4].Value;
-  // const amount = callbackData.Body.stkCallback.CallbackMetadata.Item[0].Value;
-  // const transaction_id =
-  //   callbackData.Body.stkCallback.CallbackMetadata.Item[1].Value;
+ const phone = callbackData.Body.stkCallback.CallbackMetadata.Item[4].Value;
+  const amount = callbackData.Body.stkCallback.CallbackMetadata.Item[0].Value;
+ const transaction_id = callbackData.Body.stkCallback.CallbackMetadata.Item[1].Value;
 
   //console.log({ phone, amount, transaction_id });
 
   //saving transactions to the database
-  // const payment = new Payment();
+   const payment = new Payment();
 
-  // payment.number = phone;
-  // payment.transaction_id = transaction_id;
-  // payment.amount = amount;
+  payment.number = phone;
+  payment.transaction_id = transaction_id;
+  payment.amount = amount;
 
-  // payment
-  //   .save()
-  //   .then((data) => {
-  //     console.log({ message: "Saved Successfully", data });
-  //   })
-  //   .catch((err) => {
-  //     console.log(err.message);
-  //   });
+  payment.save().then((data) => {
+  console.log({ message: "Saved Successfully", data });
+   }).catch((err) => {
+  console.log(err.message);
+  });
 });
